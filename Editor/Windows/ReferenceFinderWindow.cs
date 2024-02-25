@@ -72,7 +72,7 @@ namespace UtilityEditor.Window
             { m_className = EditorGUILayout.TextField(m_className); }
             else
             {
-                GUI.color = m_classObject ? Color.white : new Color32(245, 31, 27, 255);
+                GUI.color = m_classObject ? Color.white : new Color(0.9f, 0.14f, 0.14f, 1f);
                 m_classObject = EditorGUILayout.ObjectField(m_classObject, typeof(Object), true);
                 GUI.color = Color.white;
             }
