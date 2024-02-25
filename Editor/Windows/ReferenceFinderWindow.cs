@@ -6,7 +6,7 @@ using System.Linq;
 using UnityEditor;
 
 
-namespace UtilityEditor.Window
+namespace UtilityEditor.s_window
 {
     public class ReferenceFinderWindow : EditorWindow
     {
@@ -20,6 +20,8 @@ namespace UtilityEditor.Window
             win.titleContent.text = "Reference Finder";
             win.titleContent.tooltip = "Look for any scripts within the project-wide prefabs";
             win.Show();
+
+            win.minSize = new Vector2(1080, 400);
         }
 
         public enum ExtensionType
@@ -67,6 +69,7 @@ namespace UtilityEditor.Window
             EditorGUILayout.EndVertical();
 
             EditorGUILayout.BeginHorizontal();
+            GUILayout.Space(10);
             m_useString = EditorGUILayout.ToggleLeft(string.Empty, m_useString, GUILayout.MaxWidth(20));
             if (m_useString)
             { m_className = EditorGUILayout.TextField(m_className); }
@@ -77,6 +80,7 @@ namespace UtilityEditor.Window
                 GUI.color = Color.white;
             }
             m_selectedType = (ExtensionType)EditorGUILayout.EnumPopup(m_selectedType);
+            GUILayout.Space(10);
             EditorGUILayout.EndHorizontal();
         }
         
