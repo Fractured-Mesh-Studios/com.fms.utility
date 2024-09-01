@@ -36,7 +36,7 @@ namespace UtilityEditor
             {
                 EditorGUI.Slider(position, property, m_progress.min, m_progress.max, string.Empty);
                 m_rect = new Rect(x - 5, y, width + 5, height);
-                EditorGUI.DrawRect(m_rect, EditorExtended.backgroundColor);
+                EditorGUI.DrawRect(m_rect, UtilityEditor.backgroundColor);
                 m_rect = new Rect(x, y, width, height);
                 string text = $"{property.displayName} [{label.text}/{m_progress.max}]";
                 EditorGUI.ProgressBar(m_rect, property.floatValue / m_progress.max, text);
@@ -49,7 +49,7 @@ namespace UtilityEditor
 
                 EditorGUI.Slider(m_rect, property, m_progress.min, m_progress.max, string.Empty);
                 m_rect = new Rect(x + widthLabel - 5, y, width - widthLabel, height);
-                EditorGUI.DrawRect(m_rect, EditorExtended.backgroundColor);
+                EditorGUI.DrawRect(m_rect, UtilityEditor.backgroundColor);
                 m_rect = new Rect(x + widthLabel, y, width - widthLabel, height);
                 EditorGUI.ProgressBar(m_rect, property.floatValue / m_progress.max, label.text);
                 EditorGUI.LabelField(m_labelRect, property.displayName);
