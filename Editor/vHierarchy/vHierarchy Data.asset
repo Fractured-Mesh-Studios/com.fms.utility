@@ -33,7 +33,7 @@ MonoBehaviour:
         - iColor: 0
           icon: LightmapParameters Icon
       goDatasByInstanceId:
-        keys: fe6e0000
+        keys: b26e0000
         values:
         - iColor: 0
           icon: LightmapParameters Icon

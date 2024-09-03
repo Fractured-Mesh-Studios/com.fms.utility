@@ -12,13 +12,24 @@ using Attribute = System.Attribute;
 using static VInspector.VInspectorState;
 using static VInspector.Libs.VUtils;
 using static VInspector.Libs.VGUI;
-
-
+using UnityEditorInternal;
 
 namespace VInspector
 {
     class VInspectorEditor
     {
+        private Dictionary<string, ReorderableList> reorderableLists = new Dictionary<string, ReorderableList>();
+
+        public int baseIndentLevel;
+
+        public SerializedProperty rootProperty => rootPropertyGetter.Invoke();
+        public IEnumerable<object> targets => targetsGetter.Invoke();
+        public object target => targets.FirstOrDefault();
+
+        public Type targetType => _targetType ??= target?.GetType();
+        public Type _targetType;
+
+        static Dictionary<int, Rect> fieldRects_byLastControlId = new();
 
         public void OnGUI()
         {
@@ -29,11 +40,9 @@ namespace VInspector
             var noVariablesShown = true;
             var selectedTabPath = rootTab.GetSelectedTabPath();
 
-
-
+            //draws
             void drawMember(MemberInfo memberInfo)
             {
-
                 void ifs()
                 {
                     var endIfAttribute = memberInfo.GetCustomAttributeCached<EndIfAttribute>();
@@ -320,9 +329,18 @@ namespace VInspector
                         if (isNestedEditor) return;
                         if (isResettable) return;
                         if (Attribute.IsDefined(memberInfo, typeof(ButtonAttribute))) return;
-
-                        EditorGUILayout.PropertyField(serializedProeprty, true);
-
+                        
+                        if (serializedProeprty.isArray)
+                        {
+                            //REORDENABLE LIST DRAW
+                            EditorGUILayout.BeginVertical("Box");
+                            reorderableLists[serializedProeprty.propertyPath].DoLayoutList();
+                            EditorGUILayout.EndVertical();
+                        }
+                        else
+                        {
+                            EditorGUILayout.PropertyField(serializedProeprty, true);
+                        }
                     }
                     void serialized_resettable()
                     {
@@ -480,18 +498,11 @@ namespace VInspector
 
                 }
 
-
-
-
-
                 ifs();
 
                 if (hideField) return;
 
                 GUI.enabled = !disableField;
-
-
-
 
                 tabs();
 
@@ -499,23 +510,15 @@ namespace VInspector
 
                 noVariablesShown = false;
 
-
-
-
                 foldouts();
 
                 if (!rootFoldout.IsSubfoldoutContentVisible(drawingFoldoutPath)) return;
-
-
-
-
 
                 updateIndentLevel();
 
                 field();
 
             }
-
             void drawButton(Button button, ref bool noButtonsShown)
             {
                 if (button.tabAttribute != null && !selectedTabPath.StartsWith(button.tabAttribute.name)) return;
@@ -714,7 +717,6 @@ namespace VInspector
 
             }
 
-
             void scriptField()
             {
                 if (scriptFieldProperty == null) return;
@@ -806,9 +808,6 @@ namespace VInspector
 
             }
 
-
-
-
             rootTab.ResetSubtabsDrawn();
 
             scriptField();
@@ -820,32 +819,14 @@ namespace VInspector
 
             Space(16);
             buttons();
-
             Space(4);
 
         }
 
-        public int baseIndentLevel;
-
-        public SerializedProperty rootProperty => rootPropertyGetter.Invoke();
-        public IEnumerable<object> targets => targetsGetter.Invoke();
-        public object target => targets.FirstOrDefault();
-
-        public Type targetType => _targetType ??= target?.GetType();
-        public Type _targetType;
-
-        static Dictionary<int, Rect> fieldRects_byLastControlId = new();
-
-
-
-
-
-
-        public VInspectorEditor(System.Func<SerializedProperty> rootPropertyGetter, System.Func<IEnumerable<object>> targetsGetter)
+        public VInspectorEditor(System.Func<SerializedProperty> rootPropertyGetter, System.Func<IEnumerable<object>> targetsGetter, SerializedObject so = null)
         {
             this.rootPropertyGetter = rootPropertyGetter;
             this.targetsGetter = targetsGetter;
-
 
             void createTabs()
             {
@@ -1184,11 +1165,11 @@ namespace VInspector
                     if (!curProperty.NextVisible(false)) return;
                 }
 
-
                 do
+                {
                     if (targetType.GetFieldInfo(curProperty.name) is FieldInfo fieldInfo)
                         serializedProperties_byMemberInfos[fieldInfo] = curProperty.Copy();
-
+                }
                 while (curProperty.NextVisible(false));
 
             }
@@ -1348,7 +1329,99 @@ namespace VInspector
                 drawableMemberLists_byTargetType[targetType] = membersList;
 
             }
+            void fillArrays()
+            {
+                SerializedProperty iterator = so.GetIterator();
+                if (iterator.NextVisible(true))
+                {
+                    do
+                    {
+                        if (iterator.isArray && iterator.propertyType != SerializedPropertyType.String)
+                        {
+                            // Crea una copia de la propiedad actual
+                            SerializedProperty arrayProperty = iterator.Copy();
 
+                            // Crea un ReorderableList para esta propiedad
+                            var list = new ReorderableList(so, arrayProperty, true, true, false, false);
+
+                            GUIStyle headerStyle;
+                            // Define el estilo personalizado para el encabezado
+                            headerStyle = new GUIStyle();
+                            headerStyle.fontStyle = FontStyle.Bold;
+                            headerStyle.alignment = TextAnchor.MiddleCenter;
+                            headerStyle.normal.textColor = Color.white;
+                            headerStyle.normal.background = makeTex(2, 2, Color.gray);
+
+                            // Configura los callbacks necesarios para el ReorderableList
+                            list.drawHeaderCallback = (Rect rect) =>
+                            {
+                                GUI.DrawTexture(rect, makeTex(2, 2, Color.gray), ScaleMode.StretchToFill);
+                                EditorGUI.LabelField(rect, arrayProperty.displayName);
+
+                                rect.x = rect.width + 9;
+                                rect.width = 20;
+
+
+                                if(GUI.Button(rect, "+"))
+                                {
+                                    arrayProperty.arraySize++;
+                                    so.ApplyModifiedProperties();
+                                }
+
+                                list.headerHeight = EditorGUIUtility.singleLineHeight + 5;
+                            };
+
+                            list.drawElementCallback = (Rect rect, int index, bool isActive, bool isFocused) =>
+                            {
+                                SerializedProperty element = arrayProperty.GetArrayElementAtIndex(index);
+                                SerializedProperty elementCopy = element.Copy();
+
+                                rect.x += 10;
+                                rect.width -= 10;
+
+                                GUIContent content = new GUIContent(element.displayName, $"Children ({elementCopy.CountInProperty()})");
+
+                                EditorGUI.PropertyField(rect, element, content, true);
+
+                                rect.x = rect.width + 35;
+                                rect.width = 20;
+                                rect.height = EditorGUIUtility.singleLineHeight;
+
+                                if (GUI.Button(rect, "-"))
+                                {
+                                    arrayProperty.arraySize--;
+                                    so.ApplyModifiedProperties();
+                                }
+                            };
+
+                            list.elementHeightCallback = (index) =>
+                            {
+                                SerializedProperty element = arrayProperty.GetArrayElementAtIndex(index);  
+
+                                float height = EditorGUI.GetPropertyHeight(element, true);
+
+                                return height; 
+                            };
+
+                            reorderableLists.Add(arrayProperty.propertyPath, list);
+                        }
+                    }
+                    while (iterator.NextVisible(false));
+                }
+            }
+
+            Texture2D makeTex(int width, int height, Color col)
+            {
+                Color[] pix = new Color[width * height];
+                for (int i = 0; i < pix.Length; i++)
+                {
+                    pix[i] = col;
+                }
+                Texture2D result = new Texture2D(width, height);
+                result.SetPixels(pix);
+                result.Apply();
+                return result;
+            }
 
             createTabs();
             createFoldouts();
@@ -1360,6 +1433,7 @@ namespace VInspector
 
             fillPropertiesDictionary();
             fillDrawableMembers();
+            fillArrays();
 
         }
 
@@ -1573,12 +1647,27 @@ namespace VInspector
 
     }
 
-
-
-    #region custom editors
+    #region CUSTOM_EDITOR
 
     class AbstractEditor : Editor
     {
+        void OnEnable()
+        {
+            if (target)
+                isScriptMissing = target.GetType() == typeof(MonoBehaviour) || target.GetType() == typeof(ScriptableObject);
+            else
+                isScriptMissing = target is MonoBehaviour || target is ScriptableObject;
+
+
+            if (isScriptMissing) return;
+
+            rootEditor = new VInspectorEditor(
+                rootPropertyGetter: () => serializedObject.GetIterator(),
+                targetsGetter: () => serializedObject.targetObjects,
+                serializedObject
+            );
+
+        }
 
         public override void OnInspectorGUI()
         {
@@ -1624,23 +1713,6 @@ namespace VInspector
         }
 
 
-
-
-        void OnEnable()
-        {
-            if (target)
-                isScriptMissing = target.GetType() == typeof(MonoBehaviour) || target.GetType() == typeof(ScriptableObject);
-            else
-                isScriptMissing = target is MonoBehaviour || target is ScriptableObject;
-
-
-            if (isScriptMissing) return;
-
-            rootEditor = new VInspectorEditor(rootPropertyGetter: () => serializedObject.GetIterator(),
-                                                   targetsGetter: () => serializedObject.targetObjects);
-
-        }
-
         VInspectorEditor rootEditor;
 
         bool isScriptMissing;
@@ -1662,19 +1734,14 @@ namespace VInspector
 
     #endregion
 
-    #region static inspector
-
-
+    #region STATIC_INSPECTOR
     class StaticInspector
     {
-
         static void HeaderGUI(Editor editor)
         {
             if (editor.GetType().Name != "MonoScriptImporterInspector") return;
             if ((editor.target as MonoImporter)?.GetScript() is not MonoScript script) return;
             if (script.GetClass() is not Type classType) return;
-
-
 
             List<FieldInfo> fields;
             List<Button> buttons;
@@ -1763,9 +1830,6 @@ namespace VInspector
             createButtons();
 
             if (!fields.Any() && !buttons.Any()) return;
-
-
-
 
             void drawField(FieldInfo fieldInfo)
             {
@@ -2050,17 +2114,12 @@ namespace VInspector
         static Dictionary<Type, List<Button>> buttons_byClassType = new();
         static Dictionary<Type, List<FieldInfo>> fields_byClassType = new();
 
-
-
 #if !VINSPECTOR_ATTRIBUTES_DISABLED
         [InitializeOnLoadMethod]
 #endif
         static void Subscribe() => Editor.finishedDefaultHeaderGUI += HeaderGUI;
 
     }
-
-
-
 
     #endregion
 
