@@ -11,56 +11,57 @@ using UnityEngine.UIElements;
 #else
 using UnityEngine.Experimental.UIElements;
 #endif
-
-[InitializeOnLoad]
-public static class SceneChangeTool
+namespace UtilityEditor.Utility
 {
-    private static ScriptableObject _toolbar;
-    private static string[] _scenePaths;
-    private static string[] _sceneNames;
-
-    static SceneChangeTool()
+    [InitializeOnLoad]
+    public static class SceneChangeTool
     {
-        EditorApplication.delayCall += () =>
-        {
-            EditorApplication.update -= Update;
-            EditorApplication.update += Update;
-        };
-    }
+        private static ScriptableObject s_toolbar;
+        private static string[] s_scenePaths;
+        private static string[] s_sceneNames;
 
-    private static void Update()
-    {
-        if (_toolbar == null)
+        static SceneChangeTool()
         {
-            Assembly editorAssembly = typeof(UnityEditor.Editor).Assembly;
-
-            UnityEngine.Object[] toolbars = UnityEngine.Resources.FindObjectsOfTypeAll(editorAssembly.GetType("UnityEditor.Toolbar"));
-            _toolbar = toolbars.Length > 0 ? (ScriptableObject)toolbars[0] : null;
-            if (_toolbar != null)
+            EditorApplication.delayCall += () =>
             {
-#if UNITY_2021_1_OR_NEWER
-                var root = _toolbar.GetType().GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
-                var rawRoot = root.GetValue(_toolbar);
-                var mRoot = rawRoot as VisualElement;
-                RegisterCallback("ToolbarZoneRightAlign", OnGUI);
+                EditorApplication.update -= Update;
+                EditorApplication.update += Update;
+            };
+        }
 
-                void RegisterCallback(string root, Action cb)
+        private static void Update()
+        {
+            if (s_toolbar == null)
+            {
+                Assembly editorAssembly = typeof(UnityEditor.Editor).Assembly;
+
+                UnityEngine.Object[] toolbars = UnityEngine.Resources.FindObjectsOfTypeAll(editorAssembly.GetType("UnityEditor.Toolbar"));
+                s_toolbar = toolbars.Length > 0 ? (ScriptableObject)toolbars[0] : null;
+                if (s_toolbar != null)
                 {
-                    var toolbarZone = mRoot.Q(root);
+#if UNITY_2021_1_OR_NEWER
+                    var root = s_toolbar.GetType().GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
+                    var rawRoot = root.GetValue(s_toolbar);
+                    var mRoot = rawRoot as VisualElement;
+                    RegisterCallback("ToolbarZoneRightAlign", OnGUI);
 
-                    var parent = new VisualElement()
+                    void RegisterCallback(string root, Action cb)
                     {
-                        style =
+                        var toolbarZone = mRoot.Q(root);
+
+                        var parent = new VisualElement()
+                        {
+                            style =
                         {
                             flexGrow = 1,
                             flexDirection = FlexDirection.Row,
                         }
-                    };
-                    var container = new IMGUIContainer();
-                    container.onGUIHandler += () => { cb?.Invoke(); };
-                    parent.Add(container);
-                    toolbarZone.Add(parent);
-                }
+                        };
+                        var container = new IMGUIContainer();
+                        container.onGUIHandler += () => { cb?.Invoke(); };
+                        parent.Add(container);
+                        toolbarZone.Add(parent);
+                    }
 #else
 #if UNITY_2020_1_OR_NEWER
           var windowBackendPropertyInfo = editorAssembly.GetType("UnityEditor.GUIView").GetProperty("windowBackend", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
@@ -80,61 +81,62 @@ public static class SceneChangeTool
           handler += OnGUI;
           onGUIHandlerFieldInfo.SetValue(container, handler);
 #endif
+                }
             }
-        }
 
-        if (_scenePaths == null || _scenePaths.Length != EditorBuildSettings.scenes.Length)
-        {
-            List<string> scenePaths = new List<string>();
-            List<string> sceneNames = new List<string>();
-
-            foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes)
+            if (s_scenePaths == null || s_scenePaths.Length != EditorBuildSettings.scenes.Length)
             {
-                if (scene.path == null || scene.path.StartsWith("Assets") == false)
-                    continue;
+                List<string> scenePaths = new List<string>();
+                List<string> sceneNames = new List<string>();
 
-                string scenePath = Application.dataPath + scene.path.Substring(6);
+                foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes)
+                {
+                    if (scene.path == null || scene.path.StartsWith("Assets") == false)
+                        continue;
 
-                scenePaths.Add(scenePath);
-                sceneNames.Add(Path.GetFileNameWithoutExtension(scenePath));
+                    string scenePath = Application.dataPath + scene.path.Substring(6);
+
+                    scenePaths.Add(scenePath);
+                    sceneNames.Add(Path.GetFileNameWithoutExtension(scenePath));
+                }
+
+                s_scenePaths = scenePaths.ToArray();
+                s_sceneNames = sceneNames.ToArray();
             }
-
-            _scenePaths = scenePaths.ToArray();
-            _sceneNames = sceneNames.ToArray();
         }
-    }
 
-    private static void OnGUI()
-    {
-        using (new EditorGUI.DisabledScope(Application.isPlaying))
+        private static void OnGUI()
         {
-            Rect rect = new Rect(0, 0, Screen.width, Screen.height);
-            rect.xMin = EditorGUIUtility.currentViewWidth * 0.5f + 100.0f;
-            rect.xMax = EditorGUIUtility.currentViewWidth - 350.0f;
-            rect.y = 8.0f;
+            using (new EditorGUI.DisabledScope(Application.isPlaying))
+            {
+                Rect rect = new Rect(0, 0, Screen.width, Screen.height);
+                rect.xMin = EditorGUIUtility.currentViewWidth * 0.5f + 100.0f;
+                rect.xMax = EditorGUIUtility.currentViewWidth - 350.0f;
+                rect.y = 8.0f;
 
 #if UNITY_2021_1_OR_NEWER == false
         using (new GUILayout.AreaScope(rect))
 #endif
-            {
-                string sceneName = EditorSceneManager.GetActiveScene().name;
-                int sceneIndex = -1;
-
-                for (int i = 0; i < _sceneNames.Length; ++i)
                 {
-                    if (sceneName == _sceneNames[i])
+                    string sceneName = EditorSceneManager.GetActiveScene().name;
+                    int sceneIndex = -1;
+
+                    for (int i = 0; i < s_sceneNames.Length; ++i)
                     {
-                        sceneIndex = i;
-                        break;
+                        if (sceneName == s_sceneNames[i])
+                        {
+                            sceneIndex = i;
+                            break;
+                        }
                     }
-                }
 
-                int newSceneIndex = EditorGUILayout.Popup(sceneIndex, _sceneNames, GUILayout.Width(200.0f));
-                if (newSceneIndex != sceneIndex)
-                {
-                    if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                    int newSceneIndex = EditorGUILayout.Popup(sceneIndex, s_sceneNames, GUILayout.Width(200.0f));
+                    if (newSceneIndex != sceneIndex)
                     {
-                        EditorSceneManager.OpenScene(_scenePaths[newSceneIndex], OpenSceneMode.Single);
+                        if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                        {
+                            EditorSceneManager.OpenScene(s_scenePaths[newSceneIndex], OpenSceneMode.Single);
+                        }
                     }
                 }
             }

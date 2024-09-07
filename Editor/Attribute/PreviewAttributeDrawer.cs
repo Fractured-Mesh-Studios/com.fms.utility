@@ -1,14 +1,14 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-
 using UtilityEngine;
 
 namespace UtilityEditor
 {
-    [CustomPropertyDrawer(typeof(Preview3DAttribute))]
-    public class Preview3DAttributeDrawer : PropertyDrawer
+    [CustomPropertyDrawer(typeof(PreviewAttribute))]
+    public class PreviewDrawer : PropertyDrawer
     {
-        private Editor m_editor;
         private bool m_foldout;
         private int m_margin = 4;
 
@@ -18,7 +18,7 @@ namespace UtilityEditor
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            var attrib = (Preview3DAttribute)attribute;
+            var attrib = (PreviewAttribute)attribute;
             m_margin = attrib.margin;
 
             Rect outerRect = new Rect(position.x, position.y, position.width, GetPropertyHeight(property, label));
@@ -41,13 +41,10 @@ namespace UtilityEditor
 
                     GUIStyle previewStyle = new GUIStyle();
                     previewStyle.normal.background = EditorGUIUtility.whiteTexture;
-                    
-                    if (m_editor == null)
-                        m_editor = Editor.CreateEditor(property.objectReferenceValue);
-                    else
-                    {
-                        m_editor.OnInteractivePreviewGUI(previewRect, previewStyle);
-                    }
+
+                    Texture2D texture = property.objectReferenceValue as Texture2D;
+
+                    GUI.DrawTexture(previewRect, texture, ScaleMode.ScaleToFit);
                 }
             }
         }
@@ -66,7 +63,7 @@ namespace UtilityEditor
 
         private bool CanBePreviewed(Object obj)
         {
-            return obj is GameObject || obj is Material || obj is Mesh;
+            return obj is Texture || obj is Sprite;
         }
     }
 }

@@ -1577,7 +1577,7 @@ namespace VInspector
 
     #region custom editors
 
-    class AbstractEditor : Editor
+    public class AbstractEditor : Editor
     {
 
         public override void OnInspectorGUI()
@@ -1651,13 +1651,13 @@ namespace VInspector
 #if !VINSPECTOR_ATTRIBUTES_DISABLED
     [CustomEditor(typeof(MonoBehaviour), true), CanEditMultipleObjects]
 #endif
-    class ScriptEditor : AbstractEditor { }
+    public class ScriptEditor : AbstractEditor { }
 
 
 #if !VINSPECTOR_ATTRIBUTES_DISABLED
     [CustomEditor(typeof(ScriptableObject), true), CanEditMultipleObjects]
 #endif
-    class ScriptableObjectEditor : AbstractEditor { }
+    public class ScriptableObjectEditor : AbstractEditor { }
 
 
     #endregion

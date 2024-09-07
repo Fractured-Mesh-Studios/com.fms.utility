@@ -2,12 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ScriptableObjectAttribute : PropertyAttribute
+namespace UtilityEngine
 {
-    public string label;
-
-    public ScriptableObjectAttribute(string label = "")
+    public class InlineAttribute : PropertyAttribute
     {
-        this.label = label;
+        public string label;
+
+        public InlineAttribute(string label = "")
+        {
+            this.label = label;
+        }
     }
 }
