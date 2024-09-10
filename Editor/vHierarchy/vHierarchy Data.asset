@@ -12,28 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a9752b0c8e144801967e6897679604b, type: 3}
   m_Name: vHierarchy Data
   m_EditorClassIdentifier: 
-  sceneDatasByGuid:
+  sceneDatas_byGuid:
     keys:
-    - 2500e33b935a94b208c7557a8b57c787
     - ffc0d4010bbf28b4594072e72b8655ab
     values:
-    - goDatasByGlobalId:
-        keys:
-        - GlobalObjectId_V1-2-2500e33b935a94b208c7557a8b57c787-1686319076-0
-        values:
-        - iColor: 2
-          icon: 
-      goDatasByInstanceId:
-        keys: 
+    - goDatas_byGlobalId:
+        keys: []
         values: []
-    - goDatasByGlobalId:
-        keys:
-        - GlobalObjectId_V1-2-ffc0d4010bbf28b4594072e72b8655ab-2106383174-0
-        values:
-        - iColor: 0
-          icon: LightmapParameters Icon
-      goDatasByInstanceId:
-        keys: fe6e0000
-        values:
-        - iColor: 0
-          icon: LightmapParameters Icon
