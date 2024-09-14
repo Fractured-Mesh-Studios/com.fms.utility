@@ -18,11 +18,17 @@ MonoBehaviour:
         globalObjectIdString: GlobalObjectId_V1-1-b3cbb0f1bf085f47b298ce4e1443dfc1-102900000-0
       _typeString: UnityEditor.DefaultAsset, UnityEditor.CoreModule, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      _obj: {fileID: 0}
+      _obj: {fileID: 102900000, guid: b3cbb0f1bf085f47b298ce4e1443dfc1, type: 3}
       isSceneGameObject: 0
       isFolder: 1
       isAsset: 0
       _id: 1058285967
     name: Page 1
+    _id: 1064694048
+  - items: []
+    name: Page 2
+    _id: 1059254325
+  - items: []
+    name: Page 3
     _id: 0
   rowScale: 1
