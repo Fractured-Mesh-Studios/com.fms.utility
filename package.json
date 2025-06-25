@@ -1,6 +1,6 @@
 {
   "name": "com.fms.utility",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "displayName": "Utility",
   "description": "Author: Jorge Nauel Gerones.\nThis plugin is a base of utilities for unity game editor",
   "unity": "2021.1",
