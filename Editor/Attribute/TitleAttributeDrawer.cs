@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -28,7 +29,22 @@ namespace UtilityEditor
 
             padding = attr.subtitle != string.Empty ? Padding * 3 : 2f;
 
-            return base.GetPropertyHeight(property, label) + iconSize + padding;
+            float height = !property.isExpanded ? 
+                base.GetPropertyHeight(property, label) : 
+                EditorGUI.GetPropertyHeight(property, label, true);
+            
+            //Title Attrib Compatibility
+            var otherAttributes = fieldInfo
+                .GetCustomAttributes(typeof(PropertyAttribute), true)
+                .OfType<PropertyAttribute>()
+                .Where(a => !(a is TitleAttribute))
+                .ToArray();
+
+            if (otherAttributes.Length > 0)
+                height += 8f;
+            //Title Attrib Compatibility
+
+            return height;
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)

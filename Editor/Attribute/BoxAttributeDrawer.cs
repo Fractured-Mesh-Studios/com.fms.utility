@@ -9,13 +9,16 @@ namespace UtilityEditor
     [CustomPropertyDrawer(typeof(BoxAttribute))]
     public class BoxAttributeDrawer : PropertyDrawer
     {
+        private const int PADDING = 3;
+        private const int BORDER = 1;
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             BoxAttribute att = (BoxAttribute)attribute;
 
             float propertyHeight = EditorGUI.GetPropertyHeight(property, label, true);
-            float padding = att.padding ? 3f : 0f;
-            float borderSize = att.border ? 1f : 0f;
+            float padding = att.padding ? PADDING : 0f;
+            float borderSize = att.border ? BORDER : 0f;
 
             float totalVertical = padding * 2f;
 
@@ -52,8 +55,8 @@ namespace UtilityEditor
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             BoxAttribute att = (BoxAttribute)attribute;
-            float padding = att.padding ? 3f : 0f;
-            float borderSize = att.border ? 1f : 0f;
+            float padding = att.padding ? PADDING : 0f;
+            float borderSize = att.border ? BORDER : 0f;
 
             return EditorGUI.GetPropertyHeight(property, label, true)
                    + (padding * 2f) + (borderSize * 2f);
