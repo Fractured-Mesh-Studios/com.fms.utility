@@ -9,8 +9,8 @@ namespace UtilityEditor
     [CustomPropertyDrawer(typeof(BoxAttribute))]
     public class BoxAttributeDrawer : PropertyDrawer
     {
-        private const int PADDING = 3;
-        private const int BORDER = 1;
+        public const int PADDING = 3;
+        public const int BORDER = 1;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {

@@ -33,18 +33,23 @@ namespace UtilityEditor
                 base.GetPropertyHeight(property, label) : 
                 EditorGUI.GetPropertyHeight(property, label, true);
             
-            //Title Attrib Compatibility
+            //Box Attrib Compatibility
             var otherAttributes = fieldInfo
                 .GetCustomAttributes(typeof(PropertyAttribute), true)
                 .OfType<PropertyAttribute>()
-                .Where(a => !(a is TitleAttribute))
+                .Where(a => (a is BoxAttribute))
                 .ToArray();
 
             if (otherAttributes.Length > 0)
-                height += 8f;
-            //Title Attrib Compatibility
+            {
+                BoxAttribute attrib = otherAttributes.OfType<BoxAttribute>().FirstOrDefault();
+                height += attrib.padding ?
+                    BoxAttributeDrawer.PADDING * 2f :
+                    BoxAttributeDrawer.PADDING / 2f;
+            }
+            //Box Attrib Compatibility
 
-            return height;
+            return height + iconSize + padding;
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -153,6 +158,7 @@ namespace UtilityEditor
             // Property field rect
             Rect fieldRect = new Rect(position.x, position.y + TitleHeight + height, position.width, EditorGUI.GetPropertyHeight(prop));
 
+            // Line rect
             Rect lineRect = EditorGUILayout.GetControlRect();
 
             lineRect.height = 1;
