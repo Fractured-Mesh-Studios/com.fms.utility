@@ -1,6 +1,6 @@
 {
   "name": "com.fms.utility",
-  "version": "0.2.3",
+  "version": "1.0.0",
   "displayName": "Utility",
   "description": "Author: Jorge Nauel Gerones.\nThis plugin is a base of utilities for unity game editor",
   "unity": "2021.1",
@@ -19,7 +19,7 @@
   ],
   "author": {
     "name": "Fractured Mesh Studios",
-    "email": "gerones.jorge@gmail.com",
-    "url": "https://www.unity3d.com"
+    "url": "https://www.unity3d.com",
+    "email": "gerones.jorge@gmail.com"
   }
 }

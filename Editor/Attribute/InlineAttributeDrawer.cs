@@ -42,9 +42,9 @@ namespace UtilityEditor
             {
                 EditorGUI.indentLevel++;
 
-                if (editor == null || !editor.target.Equals(@object))
+                if (editor == null || editor.target != @object)
                 {
-                    Editor.CreateCachedEditor(@object, GetEditorType(@object), ref editor);
+                    Editor.CreateCachedEditor(@object, null, ref editor);
                 }
 
                 if (editor != null)
@@ -60,16 +60,6 @@ namespace UtilityEditor
             }
 
             EditorGUILayout.EndVertical();
-        }
-
-        private System.Type GetEditorType(Object @object)
-        {
-            if (@object is Material)
-            {
-                return typeof(MaterialEditor);
-            }
-
-            return typeof(Editor);
         }
     }
 }
