@@ -49,7 +49,7 @@ namespace UtilityEditor
 
                 if (editor != null)
                 {
-                    editor.DrawDefaultInspector();
+                    editor.OnInspectorGUI();
                 }
                 else
                 {
@@ -64,18 +64,9 @@ namespace UtilityEditor
 
         private System.Type GetEditorType(Object @object)
         {
-            // Return the editor type based on the object type
             if (@object is Material)
             {
                 return typeof(MaterialEditor);
-            }
-            else if (@object is ScriptableObject)
-            {
-                return typeof(VInspector.ScriptableObjectEditor);
-            }
-            else if (@object is MonoBehaviour)
-            {
-                return typeof(VInspector.ScriptEditor);
             }
 
             return typeof(Editor);
